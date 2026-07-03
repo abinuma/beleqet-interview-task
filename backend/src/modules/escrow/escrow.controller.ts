@@ -1,5 +1,16 @@
 // escrow.controller.ts
-import { Controller, Post, Body, Param, UseGuards, HttpCode, HttpStatus, Req, Headers, UnauthorizedException } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Param,
+  UseGuards,
+  HttpCode,
+  HttpStatus,
+  Req,
+  Headers,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser, CurrentUserPayload } from '../../common/decorators/current-user.decorator';
@@ -17,7 +28,8 @@ export class EscrowController {
   ) {}
 
   @Post('initiate/:gigId')
-  @UseGuards(JwtAuthGuard) @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   initiate(@Param('gigId') gigId: string, @CurrentUser() u: CurrentUserPayload) {
     return this.svc.initiate(u.userId, gigId);
   }
@@ -36,14 +48,14 @@ export class EscrowController {
     const isProduction = this.config.get<string>('NODE_ENV') === 'production';
 
     if (isProduction && (!secret || !req.rawBody || !signature)) {
-      throw new UnauthorizedException('Webhook signature verification failed: missing required components');
+      throw new UnauthorizedException(
+        'Webhook signature verification failed: missing required components',
+      );
     }
 
     if (secret && req.rawBody && signature) {
-      const hash = crypto.createHmac('sha256', secret)
-        .update(req.rawBody)
-        .digest('hex');
-      
+      const hash = crypto.createHmac('sha256', secret).update(req.rawBody).digest('hex');
+
       if (hash !== signature) {
         throw new UnauthorizedException('Invalid Webhook Signature');
       }
@@ -53,7 +65,8 @@ export class EscrowController {
   }
 
   @Post('milestones/:id/release')
-  @UseGuards(JwtAuthGuard) @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   release(@Param('id') id: string, @CurrentUser() u: CurrentUserPayload) {
     return this.svc.releaseMilestone(id, u.userId);
   }

@@ -3,8 +3,8 @@ import { ApiProperty } from '@nestjs/swagger';
 
 // Local enum — avoids dependency on generated Prisma client at compile time.
 export enum UserRole {
-  ADMIN      = 'ADMIN',
-  EMPLOYER   = 'EMPLOYER',
+  ADMIN = 'ADMIN',
+  EMPLOYER = 'EMPLOYER',
   JOB_SEEKER = 'JOB_SEEKER',
   FREELANCER = 'FREELANCER',
 }

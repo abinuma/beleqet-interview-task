@@ -11,32 +11,58 @@ export class FreelanceController {
   constructor(private readonly svc: FreelanceService) {}
 
   @Get('jobs')
-  findJobs(@Query() q: { q?: string; category?: string; page?: number; limit?: number }) { return this.svc.findJobs(q); }
+  findJobs(@Query() q: { q?: string; category?: string; page?: number; limit?: number }) {
+    return this.svc.findJobs(q);
+  }
 
   @Get('jobs/:id')
-  findJob(@Param('id') id: string) { return this.svc.findJobById(id); }
+  findJob(@Param('id') id: string) {
+    return this.svc.findJobById(id);
+  }
 
   @Post('jobs')
-  @UseGuards(JwtAuthGuard) @ApiBearerAuth()
-  createJob(@CurrentUser() u: CurrentUserPayload, @Body() dto: CreateFreelanceJobDto) { return this.svc.createJob(u.userId, dto); }
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  createJob(@CurrentUser() u: CurrentUserPayload, @Body() dto: CreateFreelanceJobDto) {
+    return this.svc.createJob(u.userId, dto);
+  }
 
   @Post('jobs/:id/bids')
-  @UseGuards(JwtAuthGuard) @ApiBearerAuth()
-  submitBid(@Param('id') id: string, @CurrentUser() u: CurrentUserPayload, @Body() dto: CreateBidDto) { return this.svc.submitBid(u.userId, id, dto); }
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  submitBid(
+    @Param('id') id: string,
+    @CurrentUser() u: CurrentUserPayload,
+    @Body() dto: CreateBidDto,
+  ) {
+    return this.svc.submitBid(u.userId, id, dto);
+  }
 
   @Patch('bids/:id/accept')
-  @UseGuards(JwtAuthGuard) @ApiBearerAuth()
-  acceptBid(@Param('id') id: string, @CurrentUser() u: CurrentUserPayload) { return this.svc.acceptBid(id, u.userId); }
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  acceptBid(@Param('id') id: string, @CurrentUser() u: CurrentUserPayload) {
+    return this.svc.acceptBid(id, u.userId);
+  }
 
   @Get('my-bids')
-  @UseGuards(JwtAuthGuard) @ApiBearerAuth()
-  myBids(@CurrentUser() u: CurrentUserPayload) { return this.svc.getMyBids(u.userId); }
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  myBids(@CurrentUser() u: CurrentUserPayload) {
+    return this.svc.getMyBids(u.userId);
+  }
 
   @Get('contracts/:id')
-  @UseGuards(JwtAuthGuard) @ApiBearerAuth()
-  contract(@Param('id') id: string) { return this.svc.getContract(id); }
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  contract(@Param('id') id: string) {
+    return this.svc.getContract(id);
+  }
 
   @Patch('milestones/:id/approve')
-  @UseGuards(JwtAuthGuard) @ApiBearerAuth()
-  approveMilestone(@Param('id') id: string, @CurrentUser() u: CurrentUserPayload) { return this.svc.approveMilestone(id, u.userId); }
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  approveMilestone(@Param('id') id: string, @CurrentUser() u: CurrentUserPayload) {
+    return this.svc.approveMilestone(id, u.userId);
+  }
 }

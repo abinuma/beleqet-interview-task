@@ -14,20 +14,32 @@ export class UsersController {
   constructor(private readonly svc: UsersService) {}
 
   @Get('profile')
-  profile(@CurrentUser() u: CurrentUserPayload) { return this.svc.findById(u.userId); }
+  profile(@CurrentUser() u: CurrentUserPayload) {
+    return this.svc.findById(u.userId);
+  }
 
   @Patch('profile')
-  update(@CurrentUser() u: CurrentUserPayload, @Body() dto: UpdateUserDto) { return this.svc.update(u.userId, dto); }
+  update(@CurrentUser() u: CurrentUserPayload, @Body() dto: UpdateUserDto) {
+    return this.svc.update(u.userId, dto);
+  }
 
   @Get('company')
-  getCompany(@CurrentUser() u: CurrentUserPayload) { return this.svc.getCompany(u.userId); }
+  getCompany(@CurrentUser() u: CurrentUserPayload) {
+    return this.svc.getCompany(u.userId);
+  }
 
   @Post('company')
-  createCompany(@CurrentUser() u: CurrentUserPayload, @Body() dto: CreateCompanyDto) { return this.svc.createCompany(u.userId, dto); }
+  createCompany(@CurrentUser() u: CurrentUserPayload, @Body() dto: CreateCompanyDto) {
+    return this.svc.createCompany(u.userId, dto);
+  }
 
   @Get('notifications')
-  notifications(@CurrentUser() u: CurrentUserPayload) { return this.svc.getNotifications(u.userId); }
+  notifications(@CurrentUser() u: CurrentUserPayload) {
+    return this.svc.getNotifications(u.userId);
+  }
 
   @Patch('notifications/:id/read')
-  markRead(@Param('id') id: string, @CurrentUser() u: CurrentUserPayload) { return this.svc.markNotificationRead(id, u.userId); }
+  markRead(@Param('id') id: string, @CurrentUser() u: CurrentUserPayload) {
+    return this.svc.markNotificationRead(id, u.userId);
+  }
 }

@@ -5,11 +5,7 @@ import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../prisma/prisma.service';
-import {
-  QUEUE_NAMES,
-  ESCROW_JOBS,
-  NOTIFICATION_JOBS,
-} from '../queues/queues.constants';
+import { QUEUE_NAMES, ESCROW_JOBS, NOTIFICATION_JOBS } from '../queues/queues.constants';
 
 // ── Payload Types ─────────────────────────────────────────────────────────────
 
@@ -59,10 +55,7 @@ export class EscrowProcessor {
     // Locate the escrow record by gateway reference or tx_ref
     const escrow = await this.prisma.escrowTransaction.findFirst({
       where: {
-        OR: [
-          { gatewayRef: reference },
-          { gatewayRef: tx_ref },
-        ],
+        OR: [{ gatewayRef: reference }, { gatewayRef: tx_ref }],
       },
       include: {
         freelanceJob: { include: { client: true } },
@@ -131,7 +124,9 @@ export class EscrowProcessor {
   @Process(ESCROW_JOBS.AUTO_RELEASE)
   async handleAutoRelease(job: BullJob<AutoReleasePayload>) {
     const { milestoneId, freelancerId, amount } = job.data;
-    this.logger.log(`[auto-release] Processing milestone ${milestoneId} for freelancer ${freelancerId}`);
+    this.logger.log(
+      `[auto-release] Processing milestone ${milestoneId} for freelancer ${freelancerId}`,
+    );
 
     // Check the hold period has actually elapsed (job may fire slightly early)
     const releaseAt = new Date(job.data.releaseAt);
@@ -147,7 +142,7 @@ export class EscrowProcessor {
     const wallet = await this.prisma.freelancerWallet.upsert({
       where: { userId: freelancerId },
       update: {
-        pendingBalance:   { decrement: amount },
+        pendingBalance: { decrement: amount },
         availableBalance: { increment: amount },
       },
       create: {
@@ -195,7 +190,9 @@ export class EscrowProcessor {
       });
     }
 
-    this.logger.log(`[auto-release] ETB ${amount} moved to available for freelancer ${freelancerId}`);
+    this.logger.log(
+      `[auto-release] ETB ${amount} moved to available for freelancer ${freelancerId}`,
+    );
   }
 
   // ── 3. Process Withdrawal ─────────────────────────────────────────────────
@@ -211,7 +208,7 @@ export class EscrowProcessor {
         const response = await fetch('https://api.chapa.co/v1/transfers', {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${chapaSecret}`,
+            Authorization: `Bearer ${chapaSecret}`,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({

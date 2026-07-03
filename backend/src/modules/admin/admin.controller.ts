@@ -24,7 +24,14 @@ export class AdminController {
   @ApiOperation({ summary: 'List all users' })
   async getUsers() {
     return this.prisma.user.findMany({
-      select: { id: true, email: true, firstName: true, lastName: true, role: true, isActive: true },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+        isActive: true,
+      },
     });
   }
 

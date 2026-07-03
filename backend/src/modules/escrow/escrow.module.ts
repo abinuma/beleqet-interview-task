@@ -7,10 +7,7 @@ import { EscrowProcessor } from './escrow.processor';
 
 @Module({
   imports: [
-    BullModule.registerQueue(
-      { name: QUEUE_NAMES.ESCROW },
-      { name: QUEUE_NAMES.NOTIFICATIONS },
-    ),
+    BullModule.registerQueue({ name: QUEUE_NAMES.ESCROW }, { name: QUEUE_NAMES.NOTIFICATIONS }),
   ],
   providers: [EscrowService, EscrowProcessor],
   controllers: [EscrowController],

@@ -34,13 +34,14 @@ export class JobsService {
     // Build a plain where object without Prisma namespace types
     // (avoids Prisma.JobWhereInput which requires generated client)
     const where: Record<string, unknown> = { status: 'PUBLISHED' };
-    if (type)     where['type']     = type;
+    if (type) where['type'] = type;
     if (category) where['category'] = { slug: category };
     if (location) where['location'] = { contains: location, mode: 'insensitive' };
-    if (q)        where['OR']       = [
-      { title:       { contains: q, mode: 'insensitive' } },
-      { description: { contains: q, mode: 'insensitive' } },
-    ];
+    if (q)
+      where['OR'] = [
+        { title: { contains: q, mode: 'insensitive' } },
+        { description: { contains: q, mode: 'insensitive' } },
+      ];
 
     const [items, total] = await Promise.all([
       this.prisma.job.findMany({
@@ -53,7 +54,13 @@ export class JobsService {
       this.prisma.job.count({ where: where as never }),
     ]);
 
-    return { items, total, page: pageNum, limit: limitNum, totalPages: Math.ceil(total / limitNum) };
+    return {
+      items,
+      total,
+      page: pageNum,
+      limit: limitNum,
+      totalPages: Math.ceil(total / limitNum),
+    };
   }
 
   async findOne(id: string) {
@@ -68,7 +75,12 @@ export class JobsService {
   async update(id: string, employerId: string, dto: Partial<CreateJobDto>) {
     const job = await this.prisma.job.findFirst({ where: { id, company: { userId: employerId } } });
     if (!job) throw new NotFoundException('Job not found or access denied');
-    return this.prisma.job.update({ where: { id }, data: dto as never });
+
+    const data = { ...dto };
+    if (data.deadline) data.deadline = new Date(data.deadline) as any;
+    if (data.expiryDate) data.expiryDate = new Date(data.expiryDate) as any;
+
+    return this.prisma.job.update({ where: { id }, data: data as never });
   }
 
   async remove(id: string, employerId: string) {

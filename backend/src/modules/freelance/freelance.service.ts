@@ -1,19 +1,31 @@
-import { Injectable, NotFoundException, ConflictException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 
 export class CreateFreelanceJobDto {
-  title: string; description: string; categoryId: string;
-  budgetMin: number; budgetMax: number; pricingType?: string;
-  deadlineDays: number; skills: string[];
-  
+  title: string;
+  description: string;
+  categoryId: string;
+  budgetMin: number;
+  budgetMax: number;
+  pricingType?: string;
+  deadlineDays: number;
+  skills: string[];
+
   // New Freelance fields
   locationPreference?: string;
   experienceLevel?: string;
   attachments?: string[];
 }
 export class CreateBidDto {
-  amount: number; timelineDays: number; coverLetter: string;
+  amount: number;
+  timelineDays: number;
+  coverLetter: string;
 }
 
 @Injectable()
@@ -23,7 +35,10 @@ export class FreelanceService {
   async createJob(clientId: string, dto: CreateFreelanceJobDto) {
     return this.prisma.freelanceJob.create({
       data: { ...dto, clientId, status: 'OPEN' },
-      include: { category: true, client: { select: { id: true, firstName: true, lastName: true } } },
+      include: {
+        category: true,
+        client: { select: { id: true, firstName: true, lastName: true } },
+      },
     });
   }
 
@@ -34,10 +49,11 @@ export class FreelanceService {
 
     const where: Record<string, unknown> = { status: { in: ['OPEN', 'FUNDED'] } };
     if (category) where['category'] = { slug: category };
-    if (q) where['OR'] = [
-      { title:       { contains: q, mode: 'insensitive' } },
-      { description: { contains: q, mode: 'insensitive' } },
-    ];
+    if (q)
+      where['OR'] = [
+        { title: { contains: q, mode: 'insensitive' } },
+        { description: { contains: q, mode: 'insensitive' } },
+      ];
 
     const [items, total] = await Promise.all([
       this.prisma.freelanceJob.findMany({
@@ -50,7 +66,13 @@ export class FreelanceService {
       this.prisma.freelanceJob.count({ where: where as never }),
     ]);
 
-    return { items, total, page: pageNum, limit: limitNum, totalPages: Math.ceil(total / limitNum) };
+    return {
+      items,
+      total,
+      page: pageNum,
+      limit: limitNum,
+      totalPages: Math.ceil(total / limitNum),
+    };
   }
 
   async findJobById(id: string) {
@@ -99,7 +121,12 @@ export class FreelanceService {
 
       // Create contract
       const c = await tx.contract.create({
-        data: { freelanceJobId: bid.freelanceJobId, clientId, freelancerId: bid.freelancerId, agreedAmount: bid.amount },
+        data: {
+          freelanceJobId: bid.freelanceJobId,
+          clientId,
+          freelancerId: bid.freelancerId,
+          agreedAmount: bid.amount,
+        },
       });
 
       // Update gig status
@@ -136,7 +163,7 @@ export class FreelanceService {
       include: {
         milestones: { include: { deliverables: true } },
         freelanceJob: true,
-        client:     { select: { id: true, firstName: true, lastName: true } },
+        client: { select: { id: true, firstName: true, lastName: true } },
         freelancer: { select: { id: true, firstName: true, lastName: true } },
       },
     });

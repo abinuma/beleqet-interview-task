@@ -6,10 +6,7 @@ import { ApplicationsController } from './applications.controller';
 
 @Module({
   imports: [
-    BullModule.registerQueue(
-      { name: QUEUE_NAMES.APPLICATION },
-      { name: QUEUE_NAMES.ANALYTICS },
-    ),
+    BullModule.registerQueue({ name: QUEUE_NAMES.APPLICATION }, { name: QUEUE_NAMES.ANALYTICS }),
   ],
   providers: [ApplicationsService],
   controllers: [ApplicationsController],

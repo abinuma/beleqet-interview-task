@@ -1,4 +1,10 @@
-import { Injectable, NotFoundException, BadRequestException, InternalServerErrorException, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  InternalServerErrorException,
+  Logger,
+} from '@nestjs/common';
 import { IsEnum, IsInt, IsString, Max, MaxLength, Min } from 'class-validator';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
@@ -9,7 +15,9 @@ export class WithdrawDto {
   @Max(1_000_000, { message: 'Maximum single withdrawal is ETB 1,000,000' })
   amount: number;
 
-  @IsEnum(['CHAPA', 'TELEBIRR', 'CBE_BIRR'], { message: 'method must be CHAPA, TELEBIRR, or CBE_BIRR' })
+  @IsEnum(['CHAPA', 'TELEBIRR', 'CBE_BIRR'], {
+    message: 'method must be CHAPA, TELEBIRR, or CBE_BIRR',
+  })
   method: 'CHAPA' | 'TELEBIRR' | 'CBE_BIRR';
 
   @IsString()
@@ -38,7 +46,8 @@ export class WalletService {
   async withdraw(userId: string, dto: WithdrawDto) {
     const wallet = await this.prisma.freelancerWallet.findUnique({ where: { userId } });
     if (!wallet) throw new NotFoundException('Wallet not found');
-    if (wallet.availableBalance < dto.amount) throw new BadRequestException('Insufficient available balance');
+    if (wallet.availableBalance < dto.amount)
+      throw new BadRequestException('Insufficient available balance');
 
     // Step 1: Deduct balance and create a PENDING transaction atomically
     const { tx } = await this.prisma.$transaction(async (prisma) => {
@@ -47,7 +56,12 @@ export class WalletService {
         data: { availableBalance: { decrement: dto.amount } },
       });
       const tx = await prisma.walletTransaction.create({
-        data: { walletId: wallet.id, type: 'DEBIT_WITHDRAWAL', amount: dto.amount, note: `Withdrawal via ${dto.method} — pending` },
+        data: {
+          walletId: wallet.id,
+          type: 'DEBIT_WITHDRAWAL',
+          amount: dto.amount,
+          note: `Withdrawal via ${dto.method} — pending`,
+        },
       });
       return { tx };
     });
@@ -59,7 +73,7 @@ export class WalletService {
         const response = await fetch('https://api.chapa.co/v1/transfers', {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${chapaSecret}`,
+            Authorization: `Bearer ${chapaSecret}`,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
@@ -72,10 +86,12 @@ export class WalletService {
           }),
         });
 
-        const data = await response.json() as { status: string; message?: string };
+        const data = (await response.json()) as { status: string; message?: string };
         if (data.status !== 'success') {
           // Step 3 (rollback): Chapa rejected — restore balance
-          this.logger.warn(`Chapa payout rejected: ${data.message}. Rolling back balance for user ${userId}`);
+          this.logger.warn(
+            `Chapa payout rejected: ${data.message}. Rolling back balance for user ${userId}`,
+          );
           await this.prisma.$transaction([
             this.prisma.freelancerWallet.update({
               where: { userId },
@@ -86,7 +102,9 @@ export class WalletService {
               data: { note: `Withdrawal via ${dto.method} — FAILED: ${data.message}` },
             }),
           ]);
-          throw new InternalServerErrorException(`Payout rejected by payment gateway: ${data.message}`);
+          throw new InternalServerErrorException(
+            `Payout rejected by payment gateway: ${data.message}`,
+          );
         }
       } catch (err) {
         if (err instanceof InternalServerErrorException) throw err;
@@ -102,10 +120,17 @@ export class WalletService {
             data: { note: `Withdrawal via ${dto.method} — FAILED: network error` },
           }),
         ]);
-        throw new InternalServerErrorException('Could not reach payment gateway. Your balance has been restored.');
+        throw new InternalServerErrorException(
+          'Could not reach payment gateway. Your balance has been restored.',
+        );
       }
     }
 
-    return { success: true, amount: dto.amount, method: dto.method, note: 'Payout processing — typically 1-2 business days' };
+    return {
+      success: true,
+      amount: dto.amount,
+      method: dto.method,
+      note: 'Payout processing — typically 1-2 business days',
+    };
   }
 }
